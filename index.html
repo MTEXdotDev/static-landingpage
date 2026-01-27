@@ -87,9 +87,9 @@
             <div>
                 <div class="flex items-center gap-2 mb-2">
                     <p class="mono text-sm text-gray-500">System.log</p>
-                    <span class="flex items-center gap-1.5 text-[10px] mono text-emerald-500 uppercase tracking-tight">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse"></span>
-                        All systems operational (unconfirmed)
+                    <span id="system-status-badge" class="flex items-center gap-1.5 text-[10px] mono text-gray-500 uppercase tracking-tight">
+                        <span id="status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+                        <span id="status-text">Checking systems...</span>
                     </span>
                 </div>
                 <p class="text-sm text-gray-400">
@@ -108,5 +108,32 @@
         </div>
     </footer>
 
+    <script>
+        async function updateStatus() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            const badge = document.getElementById('system-status-badge');
+
+            try {
+                const response = await fetch('https://status.mtex.dev/?type=check');
+                const data = await response.json();
+
+                if (data.operational) {
+                    dot.className = 'w-2 h-2 rounded-full bg-emerald-500 pulse';
+                    badge.className = 'flex items-center gap-1.5 text-[10px] mono text-emerald-500 uppercase tracking-tight';
+                    text.textContent = 'All systems operational';
+                } else {
+                    dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+                    badge.className = 'flex items-center gap-1.5 text-[10px] mono text-amber-500 uppercase tracking-tight';
+                    text.textContent = 'Degraded performance';
+                }
+            } catch (e) {
+                dot.className = 'w-2 h-2 rounded-full bg-red-500';
+                badge.className = 'flex items-center gap-1.5 text-[10px] mono text-red-500 uppercase tracking-tight';
+                text.textContent = 'Status unreachable';
+            }
+        }
+        updateStatus();
+    </script>
 </body>
 </html>
