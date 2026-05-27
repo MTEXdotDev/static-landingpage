@@ -1,220 +1,796 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <title>MTEX.dev | Developer-First Platform</title>
     <meta name="title" content="MTEX.dev | Developer-First Platform">
     <meta name="description" content="A developer-first ecosystem building lightweight, fast, and open-source tools. Home of tw.mtex.dev, nx.mtex.dev, and the getmy API suite.">
-    <meta name="keywords" content="MTEX, Developer Tools, API, TailwindCSS Library, Open Source, Static Hosting, Web Development">
-    <meta name="author" content="Fabian Ternis">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mtex.dev/">
-    <meta property="og:title" content="MTEX.dev | Developer-First Platform">
-    <meta property="og:description" content="Building the tools we actually want to use. Simplicity, speed, and transparency for modern developers.">
-    <meta property="og:image" content="https://github.com/MTEXdotDev.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://mtex.dev/">
-    <meta property="twitter:title" content="MTEX.dev">
-    <meta property="twitter:description" content="Building the tools we actually want to use. Simplicity and speed for modern developers.">
-    <meta property="twitter:image" content="https://github.com/MTEXdotDev.png">
-
-    <link rel="icon" type="image/x-icon" href="https://github.com/MTEXdotDev.png">
-    <link rel="apple-touch-icon" href="https://github.com/MTEXdotDev.png">
-    <meta name="theme-color" content="#0a0a0a">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6', // Teal focus
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        },
+                        accent: {
+                            blue: '#3b82f6',
+                            purple: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Inter:wght@400;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #0a0a0a; 
-            color: #ededed; 
-            scrollbar-gutter: stable;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Light mode subtle gradient */
+        .bg-glow-light {
+            background: radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.08), transparent 40%),
+                        radial-gradient(circle at 80% 120%, rgba(139, 92, 246, 0.05), transparent 40%);
+        }
+
+        /* Dark mode subtle gradient */
+        .dark .bg-glow-dark {
+            background: radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.15), transparent 40%),
+                        radial-gradient(circle at 80% 120%, rgba(139, 92, 246, 0.1), transparent 40%);
+        }
+
+        /* Glass panels */
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            transition: border-color 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-2px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #333; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        .mono { font-family: 'Fira Code', monospace; }
-        .gradient-text { 
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
-        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        
-        ::selection {
-            background-color: rgba(79, 172, 254, 0.3);
-            color: #fff;
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Tab Transitions */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .tab-content.active {
+            display: grid;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Accordion transition */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Terminal typing cursor */
+        .cursor-blink::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <!-- Theme Script (Inline to prevent flash) -->
+    <script>
+        // Check local storage or system preference
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="font-sans min-h-screen relative overflow-x-hidden selection:bg-brand-500 selection:text-white bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 bg-glow-light dark:bg-glow-dark transition-colors duration-300">
 
-    <header class="container mx-auto px-6 py-12">
-        <nav class="flex justify-between items-center">
-            <div class="text-2xl font-bold mono gradient-text">MTEX.dev</div>
-            <div class="space-x-6 flex items-center">
-                <a href="stats.html" class="text-xs uppercase tracking-widest text-gray-400 hover:text-cyan-400 transition">Stats</a>
-                <a href="https://status.mtex.dev" class="hidden md:block text-xs uppercase tracking-widest text-gray-400 hover:text-cyan-400 transition">Status</a>
-                <a href="mailto:MTEX@xpsystems.eu" class="hover:text-cyan-400 transition">Contact</a>
-            </div>
-        </nav>
-    </header>
-
-    <main class="container mx-auto px-6 flex-grow mb-12">
-        <section class="max-w-6xl">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6">Building the tools we actually want to use.</h1>
-            <p class="text-xl text-gray-400 mb-12 max-w-2xl">
-                A developer-first ecosystem focused on simplicity, speed, and open-source transparency.
-            </p>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- tw.mtex.dev -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">tw.mtex.dev</h3>
-                    <p class="text-sm text-gray-400 mb-4">Our TailwindCSS component library for rapid UI development.</p>
-                    <div class="flex gap-4">
-                        <a href="https://tw.mtex.dev/index.php" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                        <a href="https://gh.mtex.dev/tw.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/80 dark:bg-black/60 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="/" class="font-bold text-lg tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(20,184,166,0.5)]"></div>
+                        MTEX.dev
+                    </a>
                 </div>
+                <div class="flex items-center space-x-4 md:space-x-8">
+                    <a href="#ecosystem" class="hidden lg:block text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Ecosystem</a>
+                    <a href="#projects" class="hidden lg:block text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Projects</a>
+                    <a href="#metrics" class="hidden md:block text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Metrics</a>
+                    <a href="https://status.mtex.dev" class="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Status</a>
 
-                <!-- nx.mtex.dev -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">nx.mtex.dev</h3>
-                    <p class="text-sm text-gray-400 mb-4">A lightweight JSON API gateway for seamless data exchange.</p>
-                    <div class="flex gap-4">
-                        <a href="https://nx.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                        <a href="https://gh.mtex.dev/nx.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors focus:outline-none">
+                        <i class="bi bi-moon-stars-fill dark:hidden"></i>
+                        <i class="bi bi-sun-fill hidden dark:inline-block text-yellow-400"></i>
+                    </button>
 
-                <!-- diff.mtex.dev -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">diff.mtex.dev</h3>
-                    <p class="text-sm text-gray-400 mb-4">A visual comparison tool for JSON payloads and code snippets.</p>
-                    <div class="flex gap-4">
-                        <a href="https://diff.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                        <a href="https://gh.mtex.dev/diff.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
-
-                <!-- gimy.site -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">gimy.site</h3>
-                    <p class="text-sm text-gray-400 mb-4">Free static website hosting for modern developers.</p>
-                    <div class="flex gap-4">
-                        <!--a href="https://gimy.site" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a-->
-                        <a href="https://gh.mtex.dev/gimy.site" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
-
-                <!-- getmy.name -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">getmy.name</h3>
-                    <p class="text-sm text-gray-400 mb-4">A headless API to power your personal portfolio data.</p>
-                    <div class="flex gap-4">
-                        <a href="https://getmy.name" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                        <a href="https://gh.mtex.dev/getmy.name" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
-
-                <!-- getmy.blog -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">getmy.blog</h3>
-                    <p class="text-sm text-gray-400 mb-4">Lightweight blogging-api for the minimalist writer.</p>
-                    <div class="flex gap-4">
-                        <!--a href="https://getmy.blog" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a-->
-                        <a href="https://gh.mtex.dev/getmy.blog" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
-
-                <!-- index.mtex.dev -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">index.mtex.dev</h3>
-                    <p class="text-sm text-gray-400 mb-4">The MTEX Domain Directory and infrastructure index.</p>
-                    <div class="flex gap-4">
-                        <a href="https://index.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                        <a href="https://gh.mtex.dev/index.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
-
-                <!-- status.mtex.dev -->
-                <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                    <h3 class="mono text-cyan-400 mb-2">status.mtex.dev</h3>
-                    <p class="text-sm text-gray-400 mb-4">Real-time uptime and incident tracking for all MTEX services.</p>
-                    <div class="flex gap-4">
-                        <a href="https://status.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                        <a href="https://gh.mtex.dev/status.mtex.dev" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
-                    </div>
-                </div>
-
-                <!-- Traffic Stats Card -->
-                <div class="border border-dashed border-white/10 p-6 rounded-lg bg-transparent flex flex-col justify-center items-center text-center">
-                    <h3 class="mono text-gray-500 text-sm mb-2">Network Insights</h3>
-                    <a href="stats.html" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500 text-cyan-400 hover:text-white transition">Live Traffic Stats</a>
+                    <a href="mailto:MTEX@xpsystems.eu" class="px-4 py-1.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-black text-sm font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">Contact</a>
                 </div>
             </div>
+        </div>
+    </nav>
 
-            <!-- Partnered Service Section -->
-            <section id="partnered-services" class="mt-16">
-                <h2 class="text-2xl font-bold mb-6 mono text-gray-500 uppercase tracking-tighter">Partnered Service</h2>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="border border-white/10 p-6 rounded-lg bg-white/5 hover:border-cyan-500/50 transition">
-                        <h3 class="mono text-cyan-400 mb-2">api-sandbox.de</h3>
-                        <p class="text-sm text-gray-400 mb-4">
-                            Ready-to-use REST API for your next prototypes. (German)
-                            <br />
-                            <span class="text-xs text-gray-500">Explore the playground at api-sandbox.de/playground.html</span>
-                        </p>
-                        <div class="flex gap-4">
-                            <a href="https://api-sandbox.de" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Visit</a>
-                            <a href="https://api-sandbox.de/playground.html" class="text-xs uppercase tracking-widest font-bold border-b border-cyan-500">Playground</a>
-                            <a href="https://gh.mtex.dev/api-sandbox-DE/api-sandbox.de" class="text-xs uppercase tracking-widest font-bold border-b border-gray-500 text-gray-400 hover:text-white transition">Source</a>
+    <!-- Main Content -->
+    <main class="flex-1 relative z-10 pt-20">
+
+        <!-- Section 1: Hero -->
+        <section class="relative pt-24 pb-20 lg:pt-32 lg:pb-28 px-6 overflow-hidden border-b border-gray-200 dark:border-white/5">
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 mb-8 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">Introducing MTEX.dev Platform</span>
+                </div>
+
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6 animate-fade-in-up text-gray-900 dark:text-white" style="animation-delay: 0.2s;">
+                    The developer-first ecosystem <br class="hidden md:block" />
+                    for the <span class="gradient-text">modern web.</span>
+                </h1>
+
+                <p class="max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400 font-light leading-relaxed mb-10 animate-fade-in-up" style="animation-delay: 0.3s;">
+                    We engineer lightweight, uncompromisingly fast, and transparent tools. From API gateways to UI components, everything you need to build with precision.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style="animation-delay: 0.4s;">
+                    <a href="#ecosystem" class="w-full sm:w-auto px-6 py-3 rounded-md bg-gray-900 dark:bg-white text-white dark:text-black font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                        Explore Tools
+                    </a>
+                    <a href="https://github.com/MTEXdotDev" class="w-full sm:w-auto px-6 py-3 rounded-md bg-transparent border border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2 font-medium">
+                        <i class="bi bi-github"></i> GitHub Source
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Terminal Preview -->
+        <section class="py-16 px-6 relative reveal-on-scroll border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-transparent">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">CLI Integrated</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-xl mx-auto text-sm">Access the entire MTEX platform directly from your terminal environment.</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0a0a0a] shadow-xl overflow-hidden relative group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="px-4 py-3 border-b border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-[#111] flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        <div class="ml-4 text-xs font-mono text-gray-500">bash — mtex-cli</div>
+                    </div>
+                    <div class="p-6 font-mono text-sm leading-relaxed overflow-x-auto bg-gray-50 dark:bg-transparent">
+                        <div class="flex text-gray-600 dark:text-gray-400 mb-2">
+                            <span class="text-brand-600 dark:text-green-400 mr-2">~</span>$ curl https://api.mtex.dev/v1/status
+                        </div>
+                        <div id="terminal-output" class="text-gray-700 dark:text-gray-300 hidden">
+                            <pre class="text-xs sm:text-sm">
+{
+  <span class="text-accent-blue dark:text-blue-400">"status"</span>: <span class="text-brand-600 dark:text-green-300">"operational"</span>,
+  <span class="text-accent-blue dark:text-blue-400">"services"</span>: {
+    <span class="text-accent-blue dark:text-blue-400">"nx.mtex.dev"</span>: <span class="text-brand-600 dark:text-green-300">"online"</span>,
+    <span class="text-accent-blue dark:text-blue-400">"tw.mtex.dev"</span>: <span class="text-brand-600 dark:text-green-300">"online"</span>,
+    <span class="text-accent-blue dark:text-blue-400">"getmy.name"</span>:  <span class="text-brand-600 dark:text-green-300">"online"</span>
+  },
+  <span class="text-accent-blue dark:text-blue-400">"latency_ms"</span>: <span class="text-accent-purple dark:text-purple-400">14</span>,
+  <span class="text-accent-blue dark:text-blue-400">"message"</span>: <span class="text-brand-600 dark:text-green-300">"All systems running with optimal precision."</span>
+}
+                            </pre>
+                        </div>
+                        <div id="terminal-cursor" class="text-gray-400 cursor-blink mt-1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Core Philosophy -->
+        <section id="philosophy" class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Core Philosophy</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">We believe developer tools should stay out of your way, performing reliably in the background.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl transition-colors duration-300 hover:border-blue-500">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-200 dark:border-blue-500/20">
+                            <i class="bi bi-lightning-charge text-blue-500 dark:text-blue-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Uncompromising Speed</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Built on modern edge infrastructure. Every API and interface is optimized to deliver responses in milliseconds.</p>
+                    </div>
+
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl transition-colors duration-300 hover:border-purple-500">
+                        <div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-200 dark:border-purple-500/20">
+                            <i class="bi bi-box text-purple-500 dark:text-purple-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Pristine Simplicity</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Zero-configuration where possible. We strip away the complexity so you can focus on writing your application logic.</p>
+                    </div>
+
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl transition-colors duration-300 hover:border-brand-500">
+                        <div class="w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mb-6 border border-brand-200 dark:border-brand-500/20">
+                            <i class="bi bi-code-square text-brand-500 dark:text-brand-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Open Transparency</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">What you see is what you get. Our core tools are open-sourced on GitHub, inviting scrutiny and community contribution.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Ecosystem Tabs -->
+        <section id="ecosystem" class="py-24 px-6 relative reveal-on-scroll border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-transparent">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">The Ecosystem</h2>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Explore our suite of developer tools.</p>
+                    </div>
+
+                    <div class="flex p-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg overflow-x-auto hide-scrollbar">
+                        <button class="tab-btn px-4 py-1.5 text-sm font-medium rounded-md text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 shadow-sm transition-colors" data-target="all">All Tools</button>
+                        <button class="tab-btn px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors" data-target="api">APIs & Data</button>
+                        <button class="tab-btn px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors" data-target="ui">UI & Hosting</button>
+                    </div>
+                </div>
+
+                <div id="tab-all" class="tab-content active grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- tw.mtex.dev -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/25">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                                <i class="bi bi-palette text-gray-600 dark:text-gray-300"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-gray-600 dark:text-gray-500 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-2 py-1 rounded">UI</span>
+                        </div>
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">tw.mtex.dev</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">TailwindCSS component library engineered for rapid UI development and prototyping.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/5">
+                            <a href="https://tw.mtex.dev/index.php" class="text-sm font-medium text-brand-600 dark:text-white hover:text-brand-500 dark:hover:text-gray-300 transition-colors">Visit Site</a>
+                            <a href="https://gh.mtex.dev/tw.mtex.dev" class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white"><i class="bi bi-github"></i></a>
+                        </div>
+                    </div>
+                    <!-- nx.mtex.dev -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/25">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                                <i class="bi bi-hdd-network text-gray-600 dark:text-gray-300"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-gray-600 dark:text-gray-500 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-2 py-1 rounded">API</span>
+                        </div>
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">nx.mtex.dev</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">A blazing-fast, lightweight JSON API gateway designed for seamless data exchange.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/5">
+                            <a href="https://nx.mtex.dev" class="text-sm font-medium text-brand-600 dark:text-white hover:text-brand-500 dark:hover:text-gray-300 transition-colors">Visit Site</a>
+                            <a href="https://gh.mtex.dev/nx.mtex.dev" class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white"><i class="bi bi-github"></i></a>
+                        </div>
+                    </div>
+                    <!-- getmy.name -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/25">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                                <i class="bi bi-person-badge text-gray-600 dark:text-gray-300"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-gray-600 dark:text-gray-500 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-2 py-1 rounded">API</span>
+                        </div>
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">getmy.name</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">A dynamic headless API suite designed to seamlessly power your personal portfolio data.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/5">
+                            <a href="https://getmy.name" class="text-sm font-medium text-brand-600 dark:text-white hover:text-brand-500 dark:hover:text-gray-300 transition-colors">Visit Site</a>
+                            <a href="https://gh.mtex.dev/getmy.name" class="text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white"><i class="bi bi-github"></i></a>
                         </div>
                     </div>
                 </div>
-            </section>
+
+                <div id="tab-api" class="tab-content grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div class="glass-panel p-6 rounded-2xl flex flex-col bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">nx.mtex.dev</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">A blazing-fast, lightweight JSON API gateway designed for seamless data exchange.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/5">
+                            <a href="https://nx.mtex.dev" class="text-sm font-medium text-brand-600 dark:text-white hover:text-brand-500 dark:hover:text-gray-300 transition-colors">Visit Site</a>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 border-l-4 border-l-brand-500">
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">api-sandbox.de</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">Partner API. Ready-to-use REST API for your next rapid prototypes.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/5">
+                            <a href="https://api-sandbox.de" class="text-sm font-medium text-brand-600 dark:text-white hover:text-brand-500 dark:hover:text-gray-300 transition-colors">Visit Site</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-ui" class="tab-content grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-2">tw.mtex.dev</h4>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6 flex-grow">TailwindCSS component library engineered for rapid UI development and prototyping.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/5">
+                            <a href="https://tw.mtex.dev/index.php" class="text-sm font-medium text-brand-600 dark:text-white hover:text-brand-500 dark:hover:text-gray-300 transition-colors">Visit Site</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- Section 5: Projects -->
+        <section id="projects" class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Highlighted Projects</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Standalone utilities and open-source applications built by the team.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <a href="https://diff.mtex.dev" class="group glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl flex flex-col sm:flex-row items-start gap-6 hover:border-brand-500 transition-colors">
+                        <div class="w-16 h-16 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <i class="bi bi-file-diff text-3xl text-gray-600 dark:text-gray-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">diff.mtex.dev</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">A robust visual comparison tool optimized for JSON payloads and complex code snippets. Easily spot changes in large data structures.</p>
+                            <span class="text-sm font-medium text-brand-600 dark:text-brand-400 flex items-center gap-2 group-hover:translate-x-1 transition-transform">Use Tool <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <a href="https://gh.mtex.dev/getmy.blog" class="group glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl flex flex-col sm:flex-row items-start gap-6 hover:border-brand-500 transition-colors">
+                        <div class="w-16 h-16 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <i class="bi bi-journal-code text-3xl text-gray-600 dark:text-gray-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">getmy.blog</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">An ultra-lightweight blogging API crafted specifically for the minimalist technical writer. Manage posts via API.</p>
+                            <span class="text-sm font-medium text-brand-600 dark:text-brand-400 flex items-center gap-2 group-hover:translate-x-1 transition-transform">View Source <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Analytics -->
+        <section id="metrics" class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-transparent">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Platform Analytics</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Visualizing our network reliability and request volume across the MTEX ecosystem.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-semibold text-gray-900 dark:text-white">API Requests (30 Days)</h3>
+                        </div>
+                        <div class="relative h-72 w-full">
+                            <canvas id="trafficChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-6">
+                        <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm flex-1 flex flex-col justify-center">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Avg Response Time</div>
+                            <div class="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">14ms</div>
+                        </div>
+                        <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm flex-1 flex flex-col justify-center">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Uptime</div>
+                            <div class="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">99.99%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Infrastructure -->
+        <section class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5">
+            <div class="max-w-7xl mx-auto text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Robust Infrastructure</h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-12">Built to scale. We rely on top-tier global CDNs and edge networking to serve tools with zero latency.</p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+                    <div>
+                        <div class="text-3xl font-bold text-brand-600 dark:text-brand-400 mb-2">12+</div>
+                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Edge Locations</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-brand-600 dark:text-brand-400 mb-2">24/7</div>
+                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Monitoring</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-brand-600 dark:text-brand-400 mb-2">&lt;50ms</div>
+                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">TTFB</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-brand-600 dark:text-brand-400 mb-2">100%</div>
+                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Transparent</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 8: Partners -->
+        <section class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-transparent">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Our Partners</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">We are proud to collaborate with and be supported by these excellent organizations.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <a href="https://ternis-edv.de" class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-6 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">
+                        <span class="font-bold text-gray-900 dark:text-white text-lg">ternis-edv.de</span>
+                    </a>
+                    <a href="https://xpsystems.eu" class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-6 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">
+                        <span class="font-bold text-gray-900 dark:text-white text-lg">xpsystems.eu/.de</span>
+                    </a>
+                    <a href="https://dnbx.de" class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-6 rounded-xl flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">
+                        <span class="font-bold text-gray-900 dark:text-white text-lg">dnbx.de</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 9: Maintainers -->
+        <section class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Core Maintainers</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">The developers driving the MTEX ecosystem forward.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-800 mb-4 flex items-center justify-center">
+                            <i class="bi bi-person text-3xl text-gray-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Fabian Ternis</h3>
+                        <a href="https://fabianternis.de" class="text-brand-600 dark:text-brand-400 text-sm hover:underline">fabianternis.de</a>
+                    </div>
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-8 rounded-2xl flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-800 mb-4 flex items-center justify-center">
+                            <i class="bi bi-person text-3xl text-gray-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Ramsay Brewer</h3>
+                        <a href="https://dogwaterdev.de" class="text-brand-600 dark:text-brand-400 text-sm hover:underline">dogwaterdev.de</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 10: Open Source -->
+        <section class="py-24 px-6 reveal-on-scroll border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-transparent">
+            <div class="max-w-4xl mx-auto text-center">
+                <i class="bi bi-github text-5xl text-gray-900 dark:text-white mb-6 inline-block"></i>
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Proudly Open Source</h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8 text-lg">
+                    MTEX.dev is built in the open. We believe in the power of community-driven development and transparency.
+                </p>
+                <a href="https://github.com/MTEXdotDev" class="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-gray-900 text-white dark:bg-white dark:text-black font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                    View GitHub Organization
+                </a>
+            </div>
+        </section>
+
+        <!-- Section 11: FAQ -->
+        <section class="py-24 px-6 relative border-b border-gray-200 dark:border-white/5 reveal-on-scroll">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden faq-item">
+                        <button class="faq-btn w-full px-6 py-4 flex justify-between items-center focus:outline-none focus:bg-gray-50 dark:focus:bg-white/5 transition-colors">
+                            <span class="font-medium text-gray-900 dark:text-white">What is MTEX.dev?</span>
+                            <i class="bi bi-chevron-down text-gray-500 transition-transform duration-300"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="px-6 pb-4 pt-1 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5">
+                                MTEX.dev is a developer-first ecosystem providing tools ranging from UI component libraries to headless APIs to streamline the development process.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden faq-item">
+                        <button class="faq-btn w-full px-6 py-4 flex justify-between items-center focus:outline-none focus:bg-gray-50 dark:focus:bg-white/5 transition-colors">
+                            <span class="font-medium text-gray-900 dark:text-white">Are the tools free?</span>
+                            <i class="bi bi-chevron-down text-gray-500 transition-transform duration-300"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="px-6 pb-4 pt-1 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5">
+                                Yes, the core tools in the MTEX ecosystem are open-source and free to use.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 12: CTA -->
+        <section class="py-32 px-6 reveal-on-scroll">
+            <div class="max-w-4xl mx-auto text-center glass-panel bg-brand-500/10 border border-brand-500/20 p-12 rounded-3xl">
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">Ready to build better?</h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-8 text-lg">
+                    Join the ecosystem today and leverage our tools for your next project.
+                </p>
+                <a href="#ecosystem" class="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-brand-600 text-white font-semibold hover:bg-brand-500 transition-colors shadow-lg shadow-brand-500/25">
+                    Explore Tools Now
+                </a>
+            </div>
+        </section>
+
     </main>
 
-    <footer class="container mx-auto px-6 py-12 border-t border-white/10">
-        <div class="grid md:grid-cols-2 gap-8 items-end">
-            <div>
-                <div class="flex items-center gap-4 mb-4 mono text-xs uppercase tracking-widest">
-                    <a href="https://legal.mtex.dev/imprint" class="text-gray-500 hover:text-cyan-400 transition">Imprint</a>
-                    <span class="text-white/10">|</span>
-                    <a href="https://legal.mtex.dev/privacy" class="text-gray-500 hover:text-cyan-400 transition">Privacy</a>
+    <!-- Professional Footer -->
+    <footer class="bg-gray-100 dark:bg-[#050505] border-t border-gray-200 dark:border-white/10 pt-16 pb-8 px-6 relative z-10 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-1">
+                    <a href="/" class="font-bold text-xl tracking-tight text-gray-900 dark:text-white mb-4 block">MTEX.dev</a>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                        Building the tools we actually want to use.
+                    </p>
                 </div>
-                <p class="text-sm text-gray-400">
-                    Webmaster: <a href="https://fabianternis.de" class="hover:underline">fabianternis</a><br>
-                    Inquiries: <a href="mailto:f.ternis@xpsystems.eu" class="hover:underline">f.ternis@xpsystems.eu</a>
-                </p>
+
+                <div>
+                    <h5 class="text-gray-900 dark:text-white text-sm font-semibold mb-4">Infrastructure</h5>
+                    <ul class="space-y-3">
+                        <li><a href="https://index.mtex.dev" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">Domain Directory</a></li>
+                        <li><a href="https://status.mtex.dev" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">System Status</a></li>
+                        <li><a href="stats.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">Network Stats</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-gray-900 dark:text-white text-sm font-semibold mb-4">Legal</h5>
+                    <ul class="space-y-3">
+                        <li><a href="https://legal.mtex.dev/imprint" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">Imprint</a></li>
+                        <li><a href="https://legal.mtex.dev/privacy" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-gray-900 dark:text-white text-sm font-semibold mb-4">Contact</h5>
+                    <ul class="space-y-3">
+                        <li><a href="mailto:MTEX@xpsystems.eu" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">MTEX@xpsystems.eu</a></li>
+                        <li><a href="mailto:f.ternis@xpsystems.eu" class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">f.ternis@xpsystems.eu</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="md:text-right flex flex-col md:items-end gap-3">
-                <div class="flex flex-wrap justify-end gap-3">
-                    <a href="stats.html" class="inline-flex items-center px-4 py-2 border border-cyan-500/30 rounded bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500 transition text-xs mono uppercase tracking-widest text-cyan-400">
-                        Network Stats
-                    </a>
-                    <a href="https://status.mtex.dev" class="inline-flex items-center px-4 py-2 border border-white/10 rounded bg-white/5 hover:bg-white/10 hover:border-cyan-500/50 transition text-xs mono uppercase tracking-widest">
-                        System Status
-                    </a>
+
+            <div class="border-t border-gray-200 dark:border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-xs text-gray-500 dark:text-gray-500 font-mono text-center md:text-left leading-relaxed">
+                    Webdevelopemnt and Webdesign by <a href="https://ternis-edv.de" class="hover:text-gray-900 dark:hover:text-white transition-colors">ternis-edv.de</a> and <a href="https://xpsystems.eu" class="hover:text-gray-900 dark:hover:text-white transition-colors">xpsystems.eu/.de</a><br>
+                    Domain managed by <a href="https://dnbx.de" class="hover:text-gray-900 dark:hover:text-white transition-colors">dnbx.de</a>
                 </div>
-                <p class="text-xs text-gray-600">
-                    &copy; 2026 MTEX.dev by Fabian Ternis. All rights reserved.
-                </p>
+                <div class="text-xs text-gray-400 dark:text-gray-600 font-mono">
+                    &copy; 2026 MTEX.dev
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Theme Toggle Logic
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            themeToggleBtn.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+                updateChartTheme();
+            });
+
+            // 1. Scroll Reveal
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+                observer.observe(el);
+            });
+
+            // 2. Terminal Typing Effect
+            setTimeout(() => {
+                const terminalOutput = document.getElementById('terminal-output');
+                const terminalCursor = document.getElementById('terminal-cursor');
+                if(terminalOutput && terminalCursor) {
+                    terminalOutput.classList.remove('hidden');
+                    terminalCursor.classList.remove('mt-1');
+                    terminalCursor.classList.add('hidden');
+                }
+            }, 1000);
+
+            // 3. Ecosystem Tabs
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => {
+                        b.classList.remove('bg-gray-100', 'dark:bg-white/10', 'text-gray-900', 'dark:text-white', 'shadow-sm');
+                        b.classList.add('text-gray-600', 'dark:text-gray-400');
+                    });
+                    btn.classList.add('bg-gray-100', 'dark:bg-white/10', 'text-gray-900', 'dark:text-white', 'shadow-sm');
+                    btn.classList.remove('text-gray-600', 'dark:text-gray-400');
+
+                    const targetId = `tab-${btn.dataset.target}`;
+                    tabContents.forEach(content => {
+                        if(content.id === targetId) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // 4. Navbar transition
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 20) {
+                    navbar.classList.add('shadow-sm');
+                } else {
+                    navbar.classList.remove('shadow-sm');
+                }
+            });
+
+            // 5. FAQ Accordion
+            const faqBtns = document.querySelectorAll('.faq-btn');
+            faqBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = btn.nextElementSibling;
+                    const icon = btn.querySelector('i');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('rotate-180');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.classList.add('rotate-180');
+                    }
+                });
+            });
+
+            // 6. Chart.js Initialization
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            let trafficChart;
+
+            const getChartColors = () => {
+                const isDark = document.documentElement.classList.contains('dark');
+                return {
+                    text: isDark ? '#9ca3af' : '#6b7280',
+                    grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                    line: '#14b8a6',
+                    fillStart: isDark ? 'rgba(20, 184, 166, 0.2)' : 'rgba(20, 184, 166, 0.1)',
+                    fillEnd: 'rgba(20, 184, 166, 0)'
+                };
+            };
+
+            const initChart = () => {
+                const colors = getChartColors();
+                const labels = Array.from({length: 30}, (_, i) => `Day ${i+1}`);
+                const data = Array.from({length: 30}, () => Math.floor(Math.random() * (50000 - 30000) + 30000));
+                for(let i=0; i<data.length; i++) { data[i] += (i * 1000); }
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, colors.fillStart);
+                gradient.addColorStop(1, colors.fillEnd);
+
+                trafficChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'API Requests',
+                            data: data,
+                            borderColor: colors.line,
+                            backgroundColor: gradient,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false, grid: { display: false } },
+                            y: {
+                                display: true,
+                                border: { display: false },
+                                grid: { color: colors.grid },
+                                ticks: {
+                                    color: colors.text,
+                                    callback: function(value) { return value / 1000 + 'k'; }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const updateChartTheme = () => {
+                if(!trafficChart) return;
+                const colors = getChartColors();
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, colors.fillStart);
+                gradient.addColorStop(1, colors.fillEnd);
+
+                trafficChart.data.datasets[0].backgroundColor = gradient;
+                trafficChart.options.scales.y.grid.color = colors.grid;
+                trafficChart.options.scales.y.ticks.color = colors.text;
+                trafficChart.update();
+            };
+
+            initChart();
+        });
+    </script>
 </body>
 </html>
